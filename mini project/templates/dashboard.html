@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumni Dashboard | AlumNet</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            🎓 AlumNet<br>
+            <span>TRUSTED PORTAL</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard_view') }}">📊 Dashboard</a>
+        <a href="{{ url_for('alumni_directory') }}" class="active">👥 Alumni Directory</a>
+        <a href="{{ url_for('logout') }}">🚪 Logout</a>
+        </nav>
+
+        <div class="session-clock">
+            <p>Session Expires In:</p>
+            <span id="timer">15:00</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="dashboard-header">
+            <h1>Welcome back, {{ user_name }}</h1>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="card profile-card">
+                <div class="card-text">
+                    <p>You're 80% there! Add your current role to help other alumni find you for opportunities.</p>
+                    <button class="btn-update">Update Profile</button>
+                </div>
+                <div class="progress-icon-bg">
+                    <span class="chart-icon">📈</span>
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <div class="card panel-card">
+                    <h3>Suggested Connections</h3>
+                    <div class="connection-item">
+                        <div class="avatar">SC</div>
+                        <div class="info"><strong>Dr. Sarah Chen</strong><br><span>Chief Tech Officer</span></div>
+                        <span class="arrow">→</span>
+                    </div>
+                    <div class="connection-item">
+                        <div class="avatar">JW</div>
+                        <div class="info"><strong>James Wilson</strong><br><span>Senior Legal Counsel</span></div>
+                        <span class="arrow">→</span>
+                    </div>
+                </div>
+
+                <div class="card panel-card event-card">
+                    <div class="event-icon">📅</div>
+                    <h3>Upcoming Events</h3>
+                    <p>No upcoming events registered for your region.</p>
+                    <button class="btn-outline">Browse All Events</button>
+                </div>
+            </div>
+
+            <div class="news-container">
+                <div class="news-header">
+                    <h3>Latest News</h3>
+                    <a href="#">View All</a>
+                </div>
+                
+                <div class="news-list">
+                    <div class="news-item">
+                        <div class="news-date">JAN<span>20</span></div>
+                        <div class="news-text">
+                            <span class="tag">EVENTS</span>
+                            <p>Annual Alumni Gala 2026 Registration Open</p>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <div class="news-date">JAN<span>18</span></div>
+                        <div class="news-text">
+                            <span class="tag campus">CAMPUS NEWS</span>
+                            <p>University Announces New AI Research Center</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let timeLeft = 900; // 15 minutes in seconds
+        const timerDisplay = document.getElementById('timer');
+
+        const countdown = setInterval(() => {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            
+            // Format seconds with leading zero
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            
+            timerDisplay.innerHTML = `${minutes}:${seconds}`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                alert("Session expired. Please log in again.");
+                window.location.href = "{{ url_for('logout') }}";
+            }
+            timeLeft--;
+        }, 1000);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlumNet | Trusted Alumni Network</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🎓 AlumNet</div>
+        <div class="nav-auth">
+            <a href="{{ url_for('login_page') }}" class="btn-login-nav">Alumni Login</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <span class="badge">🛡️ Trusted & Secure Alumni Network</span>
+            <h1>Connect with your <br><span>Alma Mater Legacy</span></h1>
+            <p>
+                Join our exclusive, verified community of graduates. Expand your professional 
+                network, find career opportunities, and stay connected with your university 
+                roots in a secure environment.
+            </p>
+            
+            <div class="hero-buttons">
+                <a href="{{ url_for('login_page') }}" class="btn-primary">Access Portal →</a>
+                <a href="{{ url_for('register_page') }}" class="btn-secondary">Register Now</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="feature-card">
+            <div class="icon">🛡️</div>
+            <h3>Secure Networking</h3>
+            <p>Every member is verified against university records for professional growth.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">🎓</div>
+            <h3>Exclusive Opportunities</h3>
+            <p>Access job listings and mentorship programs available only to our alumni.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">🔒</div>
+            <h3>Session Protection</h3>
+            <p>Advanced management ensures your data remains private with automatic encryption.</p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; 2026 AlumNet Portal. All rights reserved.</p>
+    </footer>
+</body>
+</html>

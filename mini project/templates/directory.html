@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alumni Directory | AlumNet</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+    <aside class="sidebar">
+        <div class="sidebar-logo">🎓 AlumNet<br><span>TRUSTED PORTAL</span></div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('dashboard_view') }}">📊 Dashboard</a>
+            <a href="#" class="active">👥 Alumni Directory</a>
+            <a href="{{ url_for('logout') }}">🚪 Logout</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="directory-header">
+            <h1>Alumni Directory</h1>
+            <p>Connect with verified alumni from your network.</p>
+        </header>
+
+        <div class="filter-bar">
+            <input type="text" placeholder="Search by name or roll number...">
+            <select><option>Class Year</option></select>
+            <select><option>Major</option></select>
+        </div>
+        <div class="directory-grid">
+            {% for person in alumni %}
+            <div class="profile-card-mini">
+                <div class="verified-badge">Verified Alumni</div>
+                <div class="avatar-large">{{ person[0][0] }}</div>
+                <h3>{{ person[0] }}</h3> <p>Roll No: {{ person[1] }}</p> <div class="card-actions">
+                    <a href="{{ url_for('chat_room', receiver=person[0]) }}" class="btn-message">
+                        ✉️ Message
+                    </a>
+                </div>
+            </div>
+        {% endfor %} 
+        </div>
+</div>
+    </div>
+    </main>
+</body>
+</html>

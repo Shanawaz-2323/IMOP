@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat with {{ receiver }} | AlumNet</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+    <aside class="sidebar">
+        <div class="sidebar-logo">🎓 AlumNet<br><span>TRUSTED PORTAL</span></div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('dashboard_view') }}">📊 Dashboard</a>
+            <a href="{{ url_for('alumni_directory') }}">👥 Alumni Directory</a>
+            <a href="{{ url_for('career_center') }}">💼 Career Center</a>
+            <a href="{{ url_for('logout') }}">🚪 Logout</a>
+        </nav>
+    </aside>
+
+    <main class="main-content chat-page">
+        <header class="chat-header">
+            <div class="header-info">
+                <span class="avatar-circle">{{ receiver[0] }}</span>
+                <h2>{{ receiver }}</h2>
+            </div>
+            <a href="{{ url_for('alumni_directory') }}" class="btn-exit">Close Chat</a>
+        </header>
+
+        <div class="chat-history" id="chatbox">
+            {% for msg in history %}
+                <div class="message {% if msg[1] == session['user'] %}sent{% else %}received{% endif %}">
+                    <div class="bubble">
+                        <p>{{ msg[3] }}</p>
+                        <span class="timestamp">{{ msg[4] }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="user-status">
+            <span class="status-dot"></span>
+            <small>Online</small>
+        </div>
+
+        <form class="chat-footer" action="{{ url_for('send_message', receiver=receiver) }}" method="POST">
+            <input type="text" name="message" placeholder="Type your message..." required autocomplete="off">
+            <button type="submit" class="send-btn">Send</button>
+        </form>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+<script>
+    const socket = io();
+    const sender = "{{ session['user'] }}";
+    const receiver = "{{ receiver }}";
+    // Create a unique room name for these two users
+    const room = [sender, receiver].sort().join('_');
+
+    // Join the room on connect
+    socket.emit('join', { 'username': sender, 'room': room });
+
+    // Handle incoming messages
+    socket.on('receive_message', function(data) {
+        const chatBox = document.getElementById('chatbox');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${data.sender === sender ? 'sent' : 'received'}`;
+        
+        msgDiv.innerHTML = `
+            <div class="bubble">
+                <p>${data.message}</p>
+                <span class="timestamp">Just now</span>
+            </div>
+        `;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    // Handle form submission
+    document.querySelector('.chat-footer').onsubmit = (e) => {
+        e.preventDefault();
+        const input = e.target.querySelector('input');
+        if (input.value) {
+            socket.emit('message', {
+                'sender': sender,
+                'receiver': receiver,
+                'message': input.value,
+                'room': room
+            });
+            input.value = '';
+        }
+    };
+</script>
+</body>
+</html>

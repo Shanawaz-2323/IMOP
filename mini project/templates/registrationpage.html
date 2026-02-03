@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlumNet | Secure Registration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-bg">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="logo-small">🎓 AlumNet</div>
+            <h2>Alumni Registration</h2>
+            <p>Please enter your university details to join.</p>
+            
+            <form action="{{ url_for('process_register') }}" method="POST">
+                
+                <div class="input-group">
+                    <label>University Roll Number</label>
+                    <input type="text" 
+                           name="rollno" 
+                           placeholder="e.g., 23UK1A0501" 
+                           pattern="23UK1A05(0[1-9]|[1-6][0-9]|70)" 
+                           title="Format: 23UK1A05 followed by 01 to 70"
+                           required>
+                    <small class="help-text">Authorized range: 23UK1A0501 - 23UK1A0570</small>
+                </div>
+
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" name="fullname" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Choose Username</label>
+                    <input type="text" name="username" placeholder="Choose a username" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">Verify & Register</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Already a member? <a href="{{ url_for('login_page') }}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
