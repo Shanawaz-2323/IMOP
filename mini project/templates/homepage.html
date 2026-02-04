@@ -10,7 +10,11 @@
     <nav class="navbar">
         <div class="logo">🎓 AlumNet</div>
         <div class="nav-auth">
-            <a href="{{ url_for('login_page') }}" class="btn-login-nav">Alumni Login</a>
+           <a href="{{ url_for('alumni_login_page') }}" class="btn">Alumni Login</a>
+        </div>
+        <div class="nav-auth">
+            <a href="{{ url_for('college_login_page') }}" class="btn">College Login</a>
+
         </div>
     </nav>
 
@@ -25,7 +29,7 @@
             </p>
             
             <div class="hero-buttons">
-                <a href="{{ url_for('login_page') }}" class="btn-primary">Access Portal →</a>
+                <a href="{{ url_for('alumni_login_page') }}" class="btn-primary">Access Portal →</a>
                 <a href="{{ url_for('register_page') }}" class="btn-secondary">Register Now</a>
             </div>
         </div>
