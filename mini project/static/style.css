@@ -279,7 +279,7 @@ body {
 }
 
 .btn-update {
-    background: white;
+    background: rgb(0, 0, 0);
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
@@ -654,3 +654,94 @@ body {
 /* Sent messages blue, Received messages white as per design */
 .sent .bubble { background: #1a2b48; color: white; border-radius: 15px 15px 2px 15px; }
 .received .bubble { background: #edf2f7; color: #1a2b48; border-radius: 15px 15px 15px 2px; }
+
+/* Custom Select Box Styling */
+.employee-status-select {
+    border: 2px solid #2c3e50 !important; /* Your theme color */
+    border-radius: 8px !important;
+    padding: 10px !important;
+    background-color: #ffffff;
+    font-weight: 500;
+}
+
+/* Status Pill/Badge Styles */
+.status-pill {
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: inline-block;
+    text-align: center;
+    min-width: 100px;
+}
+
+/* Specific color variants */
+.status-employed { 
+    background-color: #e6fffa; 
+    color: #2c7a7b; 
+    border: 1px solid #81e6d9; 
+}
+.status-seeking { 
+    background-color: #fffaf0; 
+    color: #9c4221; 
+    border: 1px solid #fbd38d; 
+}
+.status-higher-studies { 
+    background-color: #ebf8ff; 
+    color: #2b6cb0; 
+    border: 1px solid #90cdf4; 
+}
+
+/* Container Fix to prevent stacking */
+.row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+}
+
+/* Card Spacing and Size Control */
+/* Card Container Fix */
+.alumni-card {
+    min-width: 200px !important;
+    max-width: 250px !important;
+    min-height: 280px !important; /* Forces enough height to prevent cutting */
+    background: #ffffff !important;
+    border-radius: 15px !important;
+    padding: 20px !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: space-between !important; /* Spaces elements evenly */
+}
+
+/* Avatar Fix: Keep ONLY this as a square */
+.avatar-box {
+    width: 60px !important;
+    height: 60px !important;
+    aspect-ratio: 1 / 1 !important;
+    background: #2c3e50 !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.5rem !important;
+    font-weight: bold !important;
+    border-radius: 12px !important;
+    margin-bottom: 10px !important;
+}
+
+/* Typography Fix: Prevent cutting off long names */
+.alumni-card h6 {
+    font-size: 1rem !important;
+    margin-bottom: 5px !important;
+    word-wrap: break-word !important; /* Wraps name to next line if too long */
+    text-align: center !important;
+}
+
+/* Status Pill Fix */
+.status-pill {
+    white-space: nowrap !important; /* Keeps "Self-Employed" on one line */
+    padding: 5px 15px !important;
+    font-size: 0.7rem !important;
+    border-radius: 20px !important;
+}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumni Sign Up | AlumNet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root { --alum-blue: #1a237e; } /* Original Alumni Blue from dashboard */
+        
+        body { 
+            background-color: #f4f7f6; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+        }
+        .reg-card { 
+            width: 100%; 
+            max-width: 500px; 
+            background: white; 
+            border-radius: 15px; 
+            /* Matches layout of image_c43ca3.png but with blue color */
+            border-top: 8px solid var(--alum-blue); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+        }
+        .reg-header h1 { 
+            color: var(--alum-blue); 
+            font-weight: 800; 
+            font-size: 2.2rem; 
+            margin-bottom: 5px; 
+        }
+        .form-label { font-weight: 600; color: #333; }
+        .btn-alum { 
+            background-color: var(--alum-blue); 
+            color: white; 
+            font-weight: bold; 
+            border: none; 
+            padding: 12px; 
+            transition: 0.3s; 
+        }
+        .btn-alum:hover { background-color: #0d125a; color: white; }
+        .login-link { color: #007bff; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="reg-card p-5">
+        <div class="reg-header text-center mb-4">
+            <h1>Alumni Sign Up</h1>
+            <p class="text-muted">Join the VEC Academic Portal</p>
+        </div>
+
+        <form action="{{ url_for('process_register') }}" method="POST">
+            <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" name="fullname" class="form-control" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">University Roll Number</label>
+                <input type="text" name="rollno" class="form-control" placeholder="e.g., 23UK1A0501" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" placeholder="Username" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Employment Status</label>
+                <select name="employment_status" class="form-select" required>
+                    <option value="" disabled selected>Choose your status...</option>
+                    <option value="Employed">Employed</option>
+                    <option value="Higher Studies">Higher Studies</option>
+                    <option value="Entrepreneur">Entrepreneur</option>
+                    <option value="Seeking Opportunity">Seeking Opportunity</option>
+                </select>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-alum rounded-3 shadow-sm">Register Alumni Account</button>
+            </div>
+
+            <div class="text-center mt-4">
+                <span class="text-muted">Already have an account?</span> 
+                <a href="{{ url_for('alumni_login_page') }}" class="login-link">Login</a>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
