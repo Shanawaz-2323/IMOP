@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container animate-pop">
+    <div class="mb-5">
+        <h1 class="fw-800">Job Applications</h1>
+        <p class="text-muted">Review alumni who have applied to broadcasted opportunities.</p>
+    </div>
+
+    <div class="glass-popup p-4">
+        <table class="table table-hover align-middle">
+            <thead class="text-primary">
+                <tr>
+                    <th>Applicant Name</th>
+                    <th>Job Title</th>
+                    <th>Applied On</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td class="fw-bold">{{ app.alumni_name }}</td>
+                    <td>{{ app.job_title }}</td>
+                    <td><small class="text-muted">{{ app.applied_on }}</small></td>
+                    <td><span class="badge bg-info rounded-pill">Pending</span></td>
+                    <td>
+                        <a href="{{ url_for('view_profile', username=app.alumni_name) }}" class="btn btn-primary rounded-pill px-4">
+                            View Profile
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">No applications received yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

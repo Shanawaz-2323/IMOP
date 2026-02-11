@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="profile-card-glass p-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="glass-popup p-5" style="border-left: 6px solid #0d6efd !important;">
+                <h2 class="fw-800 mb-4"><i class="fas fa-user-circle me-2 text-primary"></i>Edit Profile</h2>
+                
+                <form action="{{ url_for('update_profile') }}" method="POST">
+                    <input type="hidden" name="rollno" value="{{ user.rollno }}">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Full Name</label>
+                            <input type="text" name="fullname" class="form-control rounded-3" value="{{ user.fullname }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Email Address</label>
+                            <input type="email" name="email" class="form-control rounded-3" value="{{ user.email }}" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Employment Status</label>
+                            <select name="employment_status" class="form-select rounded-3">
+                                <option {% if user.employment_status == 'Employed' %}selected{% endif %}>Employed</option>
+                                <option {% if user.employment_status == 'Seeking Opportunity' %}selected{% endif %}>Seeking Opportunity</option>
+                                <option {% if user.employment_status == 'Higher Studies' %}selected{% endif %}>Higher Studies</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">LinkedIn URL (for networking)</label>
+                            <input type="url" name="linkedin" class="form-control rounded-3" value="{{ user.get('linkedin', '') }}" placeholder="https://linkedin.com/in/yourprofile">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Short Bio</label>
+                            <textarea name="bio" class="form-control rounded-3" rows="3">{{ user.get('bio', '') }}</textarea>
+                        </div>
+                    </div>
+
+                   <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill fw-bold" id="saveBtn">
+                            <span id="btnText">Save Changes</span>
+                            <span id="btnLoader" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
+                        <a href="{{ url_for('dashboard_view') }}" class="btn btn-light px-4 rounded-pill">Cancel</a>
+                    </div>
+
+                    <script>
+                        // Simple script to show loading state
+                        document.querySelector('form').onsubmit = function() {
+                            document.getElementById('btnText').innerText = "Saving...";
+                            document.getElementById('btnLoader').classList.remove('d-none');
+                            document.getElementById('saveBtn').disabled = true;
+                        };
+                    </script>
+                </form>
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

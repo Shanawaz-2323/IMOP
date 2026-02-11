@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mb-4">
+    <h1 class="fw-bold" style="color: var(--v-blue);">Registration Requests</h1>
+    <p class="text-muted">Review students waiting for portal access.</p>
+</div>
+
+<div class="directory-container">
+    <table class="v-table">
+        <thead>
+            <tr class="text-uppercase small fw-bold text-muted">
+                <th>Roll No</th>
+                <th>Full Name</th>
+                <th>Desired Username</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in pending_list %}
+            <tr class="v-row">
+                <td class="fw-bold">{{ req.rollno }}</td>
+                <td>{{ req.fullname }}</td>
+                <td class="text-muted">@{{ req.username }}</td>
+                <td>
+                    <form action="{{ url_for('handle_request', rollno=req.rollno, action='approve') }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">
+                            <i class="fas fa-check me-1"></i> Approve
+                        </button>
+                    </form>
+                    <form action="{{ url_for('handle_request', rollno=req.rollno, action='deny') }}" method="POST" class="d-inline ms-2">
+                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                            <i class="fas fa-trash me-1"></i> Deny & Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center py-5">
+                    <p class="text-muted">The approval queue is currently empty.</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

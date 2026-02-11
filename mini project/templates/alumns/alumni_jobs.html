@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="header-box mb-5">
+        <h1 class="fw-800">Career Opportunities</h1>
+        <p class="text-muted">Exclusive roles broadcasted by VEC Faculty.</p>
+    </div>
+
+    <div class="row g-4">
+        {% for job in jobs %}
+        <div class="col-lg-6">
+            <div class="job-card-premium p-4">
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="badge bg-soft-blue text-primary rounded-pill">{{ job.job_type }}</span>
+                    <small class="text-muted"><i class="far fa-clock me-1"></i> {{ job.created_at }}</small>
+                </div>
+
+                <h3 class="fw-700 mb-1">{{ job.title }}</h3>
+                <h5 class="text-primary mb-4">{{ job.company }}</h5>
+
+                <div class="info-pill-grid mb-4">
+                    <div class="info-pill"><i class="fas fa-map-marker-alt me-2 text-danger"></i>{{ job.location }}</div>
+                    <div class="info-pill"><i class="fas fa-wallet me-2 text-success"></i>{{ job.salary_range }}</div>
+                    <div class="info-pill"><i class="fas fa-calendar-alt me-2 text-warning"></i>Deadline: {{ job.deadline }}</div>
+                </div>
+
+                <p class="text-muted small mb-4 line-clamp">{{ job.description }}</p>
+
+                <form action="{{ url_for('apply_job', job_id=job.id) }}" method="POST">
+                    <button type="submit" class="btn-apply-premium">
+                        Apply Now <i class="fas fa-paper-plane ms-2"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .job-card-premium {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+        transition: transform 0.3s ease;
+    }
+    .job-card-premium:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(13, 110, 253, 0.1);
+    }
+    .info-pill-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .info-pill {
+        background: #f8f9fa;
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #444;
+    }
+    .btn-apply-premium {
+        display: block;
+        width: 100%;
+        background: #0d6efd;
+        color: white;
+        text-align: center;
+        padding: 14px;
+        border-radius: 15px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: 0.3s;
+    }
+    .btn-apply-premium:hover {
+        background: #000;
+        color: white;
+    }
+    .bg-soft-blue { background: #e7f0ff; }
+</style>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container animate-pop">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="profile-card-glass text-center p-5">
+                
+                <div class="avatar-circle mb-4 mx-auto">
+                    {{ user.fullname[0] }}
+                </div>
+                
+                <h2 class="fw-800 text-dark mb-1">{{ user.fullname }}</h2>
+                <p class="text-primary fw-bold mb-3">{{ user.employment_status or 'VEC Alumni' }}</p>
+                
+                <div class="d-flex justify-content-center gap-2 mb-4">
+                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
+                        <i class="fas fa-id-card me-1 text-primary"></i> {{ user.rollno }}
+                    </span>
+                </div>
+
+                <hr class="my-4 opacity-25">
+                
+                <div class="text-start mb-4">
+                    <h6 class="text-uppercase small fw-800 text-muted mb-2" style="letter-spacing: 1px;">Biography</h6>
+                    <p class="text-secondary lh-base">{{ user.bio or 'No bio provided yet. Update your profile to tell your story!' }}</p>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded-4 text-start d-flex align-items-center">
+                            <i class="fas fa-envelope text-primary me-3"></i>
+                            <div>
+                                <small class="d-block text-muted">Official Email</small>
+                                <span class="fw-bold">{{ user.email }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    {% if user.linkedin %}
+                    <a href="{{ user.linkedin }}" target="_blank" class="btn btn-primary rounded-pill py-2 fw-bold">
+                        <i class="fab fa-linkedin me-2"></i>LinkedIn Profile
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('profile_page') }}" class="btn btn-outline-dark rounded-pill py-2">
+                        <i class="fas fa-user-edit me-2"></i>Edit Information
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 110px;
+        height: 110px;
+        background: linear-gradient(135deg, #0d6efd, #1a2b48);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 800;
+        box-shadow: 0 10px 25px rgba(13, 110, 253, 0.25);
+        border: 4px solid white;
+    }
+
+    .profile-card-glass {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}

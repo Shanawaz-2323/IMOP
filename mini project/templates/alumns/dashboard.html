@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Alumni Dashboard | VEC Portal{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-hero {
+        background: linear-gradient(135deg, var(--primary-blue), #2c3e50);
+        border-radius: 24px;
+        padding: 40px;
+        color: white;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(26, 43, 72, 0.2);
+    }
+
+    .hero-glass-overlay {
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        filter: blur(60px);
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 20px;
+        padding: 25px;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+    }
+
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+    }
+
+    .news-item {
+        border-left: 4px solid var(--v-accent);
+        background: white;
+        padding: 15px 20px;
+        border-radius: 0 12px 12px 0;
+        margin-bottom: 15px;
+        transition: 0.2s;
+    }
+
+    .news-item:hover {
+        background: #f8fafc;
+        transform: scale(1.01);
+    }
+
+    .action-pill {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 20px;
+        border-radius: 50px;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: 0.3s;
+    }
+
+    .action-pill:hover {
+        background: white;
+        color: var(--primary-blue);
+    }
+</style>
+
+<div class="container-fluid animate-pop">
+    <div class="dashboard-hero">
+        <div class="hero-glass-overlay"></div>
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge bg-info mb-3 px-3 py-2 rounded-pill">Alumni Network Active</span>
+                <h1 class="display-5 fw-800">Welcome back, {{ user }}!</h1>
+                <p class="opacity-75 fs-5">Your VEC legacy continues here. Explore career paths, connect with peers, and stay updated.</p>
+                <div class="mt-4">
+                    <a href="{{ url_for('view_jobs') }}" class="action-pill me-3">
+                        <i class="fas fa-briefcase me-2"></i>View Jobs
+                    </a>
+                    <a href="{{ url_for('alumni_directory') }}" class="action-pill">
+                        <i class="fas fa-search me-2"></i>Find Peers
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="icon-box bg-primary text-white">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <h5 class="fw-bold">Profile Strength</h5>
+                <div class="progress mt-3 mb-2" style="height: 10px; border-radius: 10px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ progress }}%"></div>
+                </div>
+                <p class="text-muted small">{{ progress }}% Complete. {{ "Looking good!" if progress > 70 else "Add more info to stand out!" }}</p>
+                <a href="{{ url_for('profile_page') }}" class="btn btn-outline-primary btn-sm w-100 rounded-pill">Update Profile</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="icon-box bg-purple text-white" style="background: #6f42c1;">
+                    <i class="fas fa-network-wired"></i>
+                </div>
+                <h5 class="fw-bold">Connections</h5>
+                <p class="display-6 fw-bold mb-1">1,240+</p>
+                <p class="text-muted small">Registered Alumni in the VEC system across the globe.</p>
+                <a href="{{ url_for('alumni_directory') }}" class="text-primary fw-bold text-decoration-none small">Browse Directory <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="icon-box bg-warning text-dark">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h5 class="fw-bold">New Opportunities</h5>
+                <p class="mb-3 text-muted small">Fresh roles posted by faculty and verified recruiters.</p>
+                <div class="d-grid">
+                    <a href="{{ url_for('view_jobs') }}" class="btn btn-dark rounded-pill">Check Career Options</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Campus Pulse</h5>
+                    <a href="#" class="small text-decoration-none">View All</a>
+                </div>
+                
+                <div class="news-item">
+                    <span class="badge bg-primary mb-2">Events</span>
+                    <h6 class="fw-bold mb-1">Annual Alumni Gala 2026 Registration Open</h6>
+                    <p class="small text-muted mb-0">Join us on campus this July for the biggest networking event of the year.</p>
+                </div>
+
+                <div class="news-item">
+                    <span class="badge bg-success mb-2">Campus News</span>
+                    <h6 class="fw-bold mb-1">University Announces New AI Research Center</h6>
+                    <p class="small text-muted mb-0">A new $2M facility dedicated to student-led AI development.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="stat-card bg-white">
+                <div class="text-center py-3">
+                    <i class="fas fa-calendar-alt fa-3x text-light mb-3"></i>
+                    <h6 class="fw-bold">Upcoming Events</h6>
+                    <p class="text-muted small">No events registered for your region this week.</p>
+                    <button class="btn btn-sm btn-light w-100 rounded-pill mt-2">Browse All Events</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
