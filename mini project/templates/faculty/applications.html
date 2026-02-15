@@ -8,36 +8,44 @@
     </div>
 
     <div class="glass-popup p-4">
-        <table class="table table-hover align-middle">
-            <thead class="text-primary">
-                <tr>
-                    <th>Applicant Name</th>
-                    <th>Job Title</th>
-                    <th>Applied On</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for app in applications %}
-                <tr>
-                    <td class="fw-bold">{{ app.alumni_name }}</td>
-                    <td>{{ app.job_title }}</td>
-                    <td><small class="text-muted">{{ app.applied_on }}</small></td>
-                    <td><span class="badge bg-info rounded-pill">Pending</span></td>
-                    <td>
-                        <a href="{{ url_for('view_profile', username=app.alumni_name) }}" class="btn btn-primary rounded-pill px-4">
-                            View Profile
-                        </a>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="5" class="text-center py-4 text-muted">No applications received yet.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <table class="table align-middle">
+    <thead>
+        <tr>
+            <th>Applicant Name</th>
+            <th>Job Title</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for app in applications %}
+        <tr>
+            <td class="fw-bold">{{ app.alumni_name }}</td>
+            <td><span class="badge bg-light text-dark">{{ app.job_title }}</span></td>
+            <td>
+                <span class="badge {% if app.status == 'Pending' %}bg-info{% elif app.status == 'Accepted' %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                    {{ app.status }}
+                </span>
+            </td>
+            <td>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('view_profile', username=app.username) }}" class="btn btn-sm btn-primary rounded-pill px-3">
+                        View Profile
+                    </a>
+                    
+                    <form action="{{ url_for('update_app_status', job_id=app.job_id, alumni_name=app.alumni_name, status='Accepted') }}" method="POST">
+                        <button type="submit" class="btn btn-sm btn-success rounded-circle"><i class="fas fa-check"></i></button>
+                    </form>
+
+                    <form action="{{ url_for('update_app_status', job_id=app.job_id, alumni_name=app.alumni_name, status='Rejected') }}" method="POST">
+                        <button type="submit" class="btn btn-sm btn-danger rounded-circle"><i class="fas fa-times"></i></button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
     </div>
 </div>
 {% endblock %}

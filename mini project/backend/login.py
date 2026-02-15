@@ -136,8 +136,6 @@ def update_profile():
     return redirect(url_for('dashboard_view'))
 
 
-
-
 @app.route('/view_jobs')
 def view_jobs():
     jobs_list = []
@@ -464,34 +462,28 @@ def apply_job(job_id):
     
 @app.route('/faculty/manage_applications')
 def manage_applications():
-    if session.get('role') != 'faculty':
-        return redirect(url_for('faculty_login_page'))
-
-    current_faculty_id = session.get('ansa_user_id')
+    # Fix: ensure we use the correct session key for faculty ID
+    current_faculty = session.get('user') 
     publisher_apps = []
 
     with jobs_env.begin() as txn:
         cursor = txn.cursor()
         for key, value in cursor:
-            key_str = key.decode('utf-8')
-            
-            # Step 1: Find Application Records
-            if key_str.startswith('app_'):
-                app_data = json.loads(value.decode('utf-8'))
+            k_str = key.decode('utf-8')
+            if k_str.startswith('app_'):
+                app = json.loads(value.decode('utf-8'))
                 
-                # Step 2: Fetch the Job associated with this application
-                job_key = f"job_{app_data['job_id']}".encode('utf-8')
-                job_raw = txn.get(job_key)
-                
-                if job_raw:
-                    job_info = json.loads(job_raw.decode('utf-8'))
+                # Fetch job to verify the faculty owns it
+                job_data = txn.get(f"job_{app['job_id']}".encode('utf-8'))
+                if job_data:
+                    job = json.loads(job_data.decode('utf-8'))
                     
-                    # Step 3: PRIVACY FILTER - Compare Job Creator ID with Current User ID
-                    if job_info.get('posted_by') == current_faculty_id:
-                        # Only add if current faculty is the one who posted it!
-                        app_data['job_title'] = job_info.get('title')
-                        publisher_apps.append(app_data)
-
+                    # Ensure only the publisher sees this AND only if Pending
+                    if job.get('poster_name') == current_faculty:
+                        if app.get('status') == 'Pending':
+                            app['job_title'] = job['title']
+                            publisher_apps.append(app)
+    
     return render_template('faculty/applications.html', applications=publisher_apps)
 
 @app.route('/faculty/pending_registrations')
@@ -507,7 +499,7 @@ def pending_registrations():
             if user_data.get('status') == 'pending':
                 pending_users.append(user_data)
                 
-    return render_template('faculty/pending_regs.html', users=pending_users)
+    return render_template('faculty/pending_requests.html', users=pending_users)
 
 @app.route('/faculty/directory')
 def faculty_alumni_directory():
@@ -551,26 +543,69 @@ def view_alumni_profile(rollno):
 
     return render_template('faculty/view_profile.html', alumni=alumni_data)
 
-@app.route('/faculty/view_profile/<username>')
+@app.route('/view_profile/<username>')
 def view_profile(username):
-    if session.get('role') != 'faculty':
+    if 'user' not in session:
         return redirect(url_for('index'))
 
-    # DEBUG: print(f"Looking up applicant: {username}") 
-    
+    user_info = None
     with env.begin() as txn:
-        # Crucial: Search for the applicant's name, NOT the session user
-        user_data_raw = txn.get(f"user_{username}".encode('utf-8'))
+        cursor = txn.cursor()
+        for key, value in cursor:
+            data = json.loads(value.decode('utf-8'))
+            # Search specifically for the unique username field
+            if data.get('username') == username:
+                user_info = data
+                user_info['rollno'] = key.decode('utf-8')
+                break
         
-    if not user_data_raw:
+    if not user_info:
         flash(f"Profile for {username} not found.", "danger")
         return redirect(url_for('manage_applications'))
 
-    # Load the applicant's data (Department, Batch, etc.)
-    applicant_info = json.loads(user_data_raw.decode('utf-8'))
+    # Pass 'user_info' as 'user' to match your existing template
+    return render_template('view_profile.html', user=user_info)
+
+@app.route('/faculty/my_posted_jobs')
+def my_posted_jobs():
+    if session.get('role') != 'faculty':
+        return redirect(url_for('faculty_login_page'))
     
-    # Pass 'applicant_info' to your existing template
-    return render_template('view_profile.html', user=applicant_info)
+    current_faculty = session.get('user') # Matches your poster_name logic
+    my_jobs = []
+
+    with jobs_env.begin() as txn:
+        cursor = txn.cursor()
+        for key, value in cursor:
+            k_str = key.decode('utf-8')
+            # Look only for job entries, not applications
+            if k_str.startswith('job_'):
+                job_data = json.loads(value.decode('utf-8'))
+                # Filter: Only show jobs posted by this faculty member
+                if job_data.get('poster_name') == current_faculty:
+                    my_jobs.append(job_data)
+
+    # Sort newest first
+    my_jobs.reverse()
+    return render_template('faculty/my_jobs.html', jobs=my_jobs)
+
+
+
+@app.route('/update_status/<job_id>/<alumni_name>/<status>', methods=['POST'])
+def update_app_status(job_id, alumni_name, status):
+    app_key = f"app_{job_id}_{alumni_name}".encode('utf-8')
+    
+    with jobs_env.begin(write=True) as txn:
+        app_data_raw = txn.get(app_key)
+        if app_data_raw:
+            app_data = json.loads(app_data_raw.decode('utf-8'))
+            app_data['status'] = status
+            txn.put(app_key, json.dumps(app_data).encode('utf-8'))
+            flash(f"Application for {alumni_name} marked as {status}.", "success")
+        else:
+            flash("Application record not found.", "danger")
+            
+    return redirect(url_for('manage_applications'))
 
 @app.route('/logout')
 def logout():

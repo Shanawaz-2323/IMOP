@@ -124,62 +124,61 @@
     </div>
 </div>
 
-<div class="row g-4">
-<div class="container animate-pop mt-5">
-    <h2 class="fw-800 mb-4">Management Suite</h2>
-    
+<div class="container mt-5">
+    <h3 class="fw-bold mb-4">Management Suite</h3>
     <div class="row g-4">
         <div class="col-md-4">
-            <div class="management-card p-4 h-100">
-                <div class="icon-box bg-soft-blue mb-3">
-                    <i class="fas fa-users-cog text-primary"></i>
+            <div class="glass-panel p-4 h-100 shadow-sm border-0 d-flex flex-column" style="border-radius: 20px; background: white;">
+                <div class="icon-box mb-3 bg-primary-soft text-primary rounded-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                    <i class="fas fa-users fa-lg"></i>
                 </div>
-                <h4 class="fw-700">Member Directory</h4>
-                <p class="text-muted small">Access and manage the full database of verified VEC alumni.</p>
-                <a href="{{ url_for('faculty_alumni_directory') }}" class="btn-link mt-auto">Explore Database <i class="fas fa-arrow-right ms-1"></i></a>
+                <h5 class="fw-bold mb-2">Member Directory</h5>
+                <p class="text-muted small flex-grow-1">Access and manage the full database of verified VEC alumni.</p>
+                <a href="{{ url_for('faculty_alumni_directory') }}" class="btn-link-premium text-decoration-none fw-bold mt-3">
+                    Explore Database <i class="fas fa-arrow-right ms-1"></i>
+                </a>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="management-card p-4 h-100">
-                <div class="icon-box bg-soft-green mb-3">
-                    <i class="fas fa-broadcast-tower text-success"></i>
+            <div class="glass-panel p-4 h-100 shadow-sm border-0 d-flex flex-column" style="border-radius: 20px; background: white;">
+                <div class="icon-box mb-3 bg-success-soft text-success rounded-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                    <i class="fas fa-file-alt fa-lg"></i>
                 </div>
-                <h4 class="fw-700">Career Services</h4>
-                <p class="text-muted small">Broadcast internships and high-tier job opportunities.</p>
-                <a href="{{ url_for('post_job_page') }}" class="btn-link mt-auto">Manage Posts <i class="fas fa-arrow-right ms-1"></i></a>
+                <h5 class="fw-bold mb-2">Job Applications</h5>
+                <p class="text-muted small flex-grow-1">Review candidates for the opportunities <b>you</b> posted.</p>
+                <a href="{{ url_for('manage_applications') }}" class="btn-link-premium text-decoration-none fw-bold mt-3" style="color: #198754;">
+                    Review Applicants <i class="fas fa-arrow-right ms-1"></i>
+                </a>
             </div>
         </div>
 
-        <div class="row g-4 mb-5">
-    <div class="col-md-4">
-        <div class="glass-panel p-4 h-100">
-            <div class="icon-box mb-3 bg-primary text-white"><i class="fas fa-users"></i></div>
-            <h5 class="fw-bold">Member Directory</h5>
-            <p class="small text-muted">Manage the full database of verified VEC alumni.</p>
-            <a href="{{ url_for('faculty_alumni_directory') }}" class="btn-link">Explore Database →</a>
+        <div class="col-md-4">
+            <div class="glass-panel p-4 h-100 shadow-sm border-0 d-flex flex-column" style="border-radius: 20px; background: white;">
+                <div class="icon-box mb-3 bg-warning-soft text-warning rounded-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                    <i class="fas fa-user-plus fa-lg"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Registration Requests</h5>
+                <p class="text-muted small flex-grow-1">Verify new alumni accounts waiting for approval.</p>
+                <a href="{{ url_for('pending_registrations') }}" class="btn-link-premium text-decoration-none fw-bold mt-3" style="color: #ffc107;">
+                    Verify Users <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
         </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="glass-panel p-4 h-100 border-accent">
-            <div class="icon-box mb-3 bg-success text-white"><i class="fas fa-id-badge"></i></div>
-            <h5 class="fw-bold">Job Applications</h5>
-            <p class="small text-muted">Review candidates for the opportunities <b>you</b> posted.</p>
-            <a href="{{ url_for('manage_applications') }}" class="btn-link text-success">Review Applicants →</a>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="glass-panel p-4 h-100">
-            <div class="icon-box mb-3 bg-warning text-dark"><i class="fas fa-user-plus"></i></div>
-            <h5 class="fw-bold">Registration Requests</h5>
-            <p class="small text-muted">Verify new alumni accounts waiting for approval.</p>
-            <a href="{{ url_for('pending_registrations') }}" class="btn-link text-warning">Verify Users →</a>
+        <div class="col-md-4">
+            <div class="glass-panel p-4 h-100 shadow-sm border-0 d-flex flex-column" style="border-radius: 20px; background: white;">
+                <div class="icon-box mb-3 bg-info-soft text-info rounded-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                    <i class="fas fa-briefcase fa-lg"></i>
+                </div>
+                <h5 class="fw-bold mb-2">My Posted Jobs</h5>
+                <p class="text-muted small flex-grow-1">View, edit, or close the career opportunities you have broadcasted to the portal.</p>
+                <a href="{{ url_for('my_posted_jobs') }}" class="btn-link-premium text-decoration-none fw-bold mt-3" style="color: #0dcaf0;">
+                    View Listings <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
         </div>
     </div>
 </div>
-    </div>
 </div>
 
 <style>
@@ -223,6 +222,28 @@
         transition: color 0.2s;
     }
     .btn-link:hover { color: #0a58ca; }
+    .bg-primary-soft { background-color: rgba(13, 110, 253, 0.1); }
+.bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
+.bg-warning-soft { background-color: rgba(255, 193, 7, 0.1); }
+
+.glass-panel {
+    transition: transform 0.3s ease, shadow 0.3s ease;
+}
+
+.glass-panel:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.btn-link-premium {
+    font-size: 0.9rem;
+    color: #0d6efd;
+    transition: gap 0.3s ease;
+}
+
+.btn-link-premium:hover i {
+    margin-left: 8px !important;
+}
 </style>
 </div>
 {% endblock %}

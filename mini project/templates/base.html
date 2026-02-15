@@ -156,8 +156,8 @@
                 <a href="{{ url_for('dashboard_view') }}" class="nav-link-premium {% if 'dashboard' in request.path %}active{% endif %}">
                     <i class="fas fa-th-large me-2"></i>Dashboard
                 </a>
-               <a class="nav-link" href="{{ url_for('view_profile', username=session['user']) }}">
-                    <i class="fas fa-user-circle me-1"></i> My Profile
+               <a class="nav-link" href="{{ url_for('view_profile', username=session.get('user')) }}">
+                    <i class="fas fa-user-circle"></i> My Profile
                 </a>
                 </a>
                 <a href="{{ url_for('view_jobs') }}" class="nav-link-premium {% if 'career' in request.path or 'view_jobs' in request.path %}active{% endif %}">

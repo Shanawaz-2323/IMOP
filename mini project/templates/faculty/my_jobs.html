@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-800 text-dark mb-1">Your Job Postings</h2>
+            <p class="text-muted">Manage and track the career opportunities you've broadcasted.</p>
+        </div>
+        <a href="{{ url_for('post_job_page') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="fas fa-plus me-2"></i>Post New Job
+        </a>
+    </div>
+
+    <div class="row g-4">
+        {% for job in jobs %}
+        <div class="col-md-6 col-lg-4">
+            <div class="glass-panel p-4 h-100 border-0 shadow-sm animate-pop" style="border-radius: 25px; background: white; transition: all 0.3s ease;">
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge {% if job.is_active %}bg-success-soft text-success{% else %}bg-secondary-soft text-secondary{% endif %} rounded-pill px-3 py-2">
+                        <i class="fas fa-circle ms-1 small me-1"></i> {{ "Active" if job.is_active else "Closed" }}
+                    </span>
+                    <small class="text-muted"><i class="far fa-calendar-alt me-1"></i> {{ job.created_at.split(' ')[0] }}</small>
+                </div>
+
+                <h4 class="fw-bold text-dark mb-1">{{ job.title }}</h4>
+                <p class="text-primary fw-600 mb-3">{{ job.company }}</p>
+
+                <div class="d-flex gap-3 mb-4">
+                    <div class="text-center p-2 rounded-3 bg-light flex-grow-1">
+                        <small class="text-muted d-block">Location</small>
+                        <span class="fw-600 small">{{ job.location }}</span>
+                    </div>
+                    <div class="text-center p-2 rounded-3 bg-light flex-grow-1">
+                        <small class="text-muted d-block">Type</small>
+                        <span class="fw-600 small">{{ job.job_type }}</span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 border-top pt-3 mt-auto">
+                    <a href="#" class="btn btn-outline-primary rounded-pill flex-grow-1 fw-bold btn-sm">
+                        <i class="fas fa-edit me-1"></i> Edit
+                    </a>
+                    <button class="btn btn-outline-danger rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;" title="Close Posting">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="bg-light d-inline-block p-4 rounded-circle mb-3">
+                <i class="fas fa-briefcase fa-3x text-muted"></i>
+            </div>
+            <h5 class="text-muted">No jobs posted yet.</h5>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
+    .bg-secondary-soft { background-color: rgba(108, 117, 125, 0.1); }
+    .animate-pop:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    }
+    .fw-800 { font-weight: 800; }
+    .fw-600 { font-weight: 600; }
+</style>
+{% endblock %}
