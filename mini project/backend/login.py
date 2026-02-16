@@ -248,38 +248,59 @@ def verify():
     flash("Invalid Credentials. Please check your username and password.", "danger")
     return redirect(url_for('alumni_login_page'))
 
-# Fixed route to allow POST data from your form
-@app.route('/process_faculty_register', methods=['POST'])
-def process_faculty_register():
-    email = request.form.get('email')
-    
-    # Domain Lock: Only @vec.edu.in allowed
-    if not email or not email.endswith('@vec.edu.in'):
-        return "Registration Error: Faculty must use @vec.edu.in email.", 403
+@app.route('/faculty_register', methods=['GET', 'POST'])
+def faculty_register():
+    if request.method == 'POST':
+        # 1. Capture every field from your registration UI
+        fullname = request.form.get('fullname')
+        email = request.form.get('email')
+        employee_id = request.form.get('employee_id')
+        phone = request.form.get('phone')
+        department = request.form.get('department')
+        designation = request.form.get('designation')
+        security_question = request.form.get('security_question')
+        security_answer = request.form.get('security_answer')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
 
-    fullname = request.form.get('fullname')
-    password = request.form.get('password')
-    role = request.form.get('role', 'faculty') 
+        # 2. Domain Lock: Only @vec.edu.in allowed
+        if not email or not email.endswith('@vec.edu.in'):
+            flash("Error: Faculty must use an official @vec.edu.in email.", "danger")
+            return redirect(url_for('faculty_register'))
 
-    
-    hashed_pw = generate_password_hash(password)
-    
-    user_data = {
-        'fullname': fullname,
-        'email': email,
-        'password': hashed_pw,
-        'role': role
-    }
+        # 3. Password Match Validation
+        if password != confirm_password:
+            flash("Error: Passwords do not match.", "warning")
+            return redirect(url_for('faculty_register'))
 
-    with env.begin(write=True) as txn:
-        # Prevent AttributeErrors by ensuring email isn't None
-        if txn.get(email.encode('utf-8')):
-            return "Error: This faculty email is already registered.", 400
-        
-        txn.put(email.encode('utf-8'), json.dumps(user_data).encode('utf-8'))
+        # 4. Data Preparation
+        hashed_pw = generate_password_hash(password)
+        user_data = {
+            'fullname': fullname,
+            'email': email,
+            'employee_id': employee_id,
+            'phone': phone,
+            'department': department,
+            'designation': designation,
+            'security_question': security_question,
+            'security_answer': security_answer,
+            'password': hashed_pw,
+            'role': 'faculty'
+        }
 
-    return redirect(url_for('faculty_login_page'))
+        # 5. Store in LMDB using email as the unique key
+        with env.begin(write=True) as txn:
+            if txn.get(email.encode('utf-8')):
+                flash("This faculty email is already registered.", "info")
+                return redirect(url_for('faculty_login_page'))
+            
+            txn.put(email.encode('utf-8'), json.dumps(user_data).encode('utf-8'))
 
+        flash("Faculty account created successfully!", "success")
+        return redirect(url_for('faculty_login_page'))
+
+    # If the method is GET, just show the registration page
+    return render_template('faculty_register.html')
 
 @app.route('/faculty_verify', methods=['POST'])
 def faculty_verify():
@@ -495,17 +516,30 @@ def manage_applications():
 
 @app.route('/faculty/pending_registrations')
 def pending_registrations():
+    # 1. Security Check
     if session.get('role') != 'faculty':
+        flash("Faculty access required.", "danger")
         return redirect(url_for('faculty_login_page'))
     
     pending_users = []
-    with env.begin() as txn: # Assuming 'env' is your user database
+    
+    # 2. Open the main alumni database (env)
+    with env.begin() as txn:
         cursor = txn.cursor()
         for key, value in cursor:
-            user_data = json.loads(value.decode('utf-8'))
-            if user_data.get('status') == 'pending':
-                pending_users.append(user_data)
+            try:
+                user_data = json.loads(value.decode('utf-8'))
                 
+                # 3. Filter: Only get Alumni who are 'pending'
+                if user_data.get('role') == 'alumni' and user_data.get('status') == 'pending':
+                    # Ensure rollno is included in the dictionary for the HTML table
+                    user_data['rollno'] = key.decode('utf-8')
+                    pending_users.append(user_data)
+            except Exception as e:
+                continue # Skip corrupted data
+                
+    # 4. Render the template (Note the subfolder 'faculty/')
+    # We pass it as 'users' to match your '{% for req in users %}' logic
     return render_template('faculty/pending_requests.html', users=pending_users)
 
 @app.route('/faculty/directory')
