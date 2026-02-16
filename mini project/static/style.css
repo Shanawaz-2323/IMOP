@@ -518,3 +518,18 @@ body.auth-vibrant-bg {
     display: inline-block;
     text-decoration: none;
 }
+.bg-soft-primary {
+    background-color: #eef2ff !important;
+    color: #4f46e5 !important;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.fs-xs {
+    font-size: 0.75rem;
+}
+
+.table thead th {
+    border-top: none;
+    letter-spacing: 0.05em;
+}

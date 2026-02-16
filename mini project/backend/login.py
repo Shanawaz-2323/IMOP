@@ -185,7 +185,7 @@ def process_register():
             cursor = txn.cursor()
             for key, value in cursor:
                 user_check = json.loads(value.decode('utf-8'))
-                if user_check.get('username') == username:
+                if user_check.get('username') == username:  
                     flash("This username is already taken! Please choose another.", "danger")
                     return redirect(url_for('register_page'))
 
@@ -421,22 +421,25 @@ def process_job_post():
 
     return redirect(url_for('faculty_dashboard'))
 
-@app.route('/view_applications')
-def view_pending_requests():
+@app.route('/handle_request/<rollno>/<action>', methods=['POST'])
+def handle_request(rollno, action):
     if session.get('role') != 'faculty':
         return redirect(url_for('index'))
-
-    apps_list = []
-    # Identify applications in your jobs_env LMDB
-    with jobs_env.begin() as txn:
-        cursor = txn.cursor()
-        for key, value in cursor:
-            k_str = key.decode('utf-8')
-            # Look for keys starting with 'app_' that we created earlier
-            if k_str.startswith('app_'):
-                apps_list.append(json.loads(value.decode('utf-8')))
-
-    return render_template('faculty/applications.html', applications=apps_list)
+        
+    with env.begin(write=True) as txn:
+        user_bytes = txn.get(rollno.encode('utf-8'))
+        if user_bytes:
+            user_data = json.loads(user_bytes.decode('utf-8'))
+            if action == 'approve':
+                user_data['status'] = 'approved'
+                txn.put(rollno.encode('utf-8'), json.dumps(user_data).encode('utf-8'))
+                flash(f"Approved {user_data['fullname']}", "success")
+            elif action == 'deny':
+                txn.delete(rollno.encode('utf-8'))
+                flash("Request denied.", "danger")
+    
+    # This now matches the function name above
+    return redirect(url_for('view_pending_requests'))
 
 @app.route('/apply_job/<job_id>', methods=['GET', 'POST']) # Added GET as a safety net
 def apply_job(job_id):
@@ -515,31 +518,21 @@ def manage_applications():
     return render_template('faculty/applications.html', applications=publisher_apps)
 
 @app.route('/faculty/pending_registrations')
-def pending_registrations():
-    # 1. Security Check
+def view_pending_requests():
     if session.get('role') != 'faculty':
-        flash("Faculty access required.", "danger")
         return redirect(url_for('faculty_login_page'))
-    
+
     pending_users = []
-    
-    # 2. Open the main alumni database (env)
     with env.begin() as txn:
         cursor = txn.cursor()
         for key, value in cursor:
-            try:
-                user_data = json.loads(value.decode('utf-8'))
-                
-                # 3. Filter: Only get Alumni who are 'pending'
-                if user_data.get('role') == 'alumni' and user_data.get('status') == 'pending':
-                    # Ensure rollno is included in the dictionary for the HTML table
-                    user_data['rollno'] = key.decode('utf-8')
-                    pending_users.append(user_data)
-            except Exception as e:
-                continue # Skip corrupted data
-                
-    # 4. Render the template (Note the subfolder 'faculty/')
-    # We pass it as 'users' to match your '{% for req in users %}' logic
+            data = json.loads(value.decode('utf-8'))
+            # Ensure we only show 'pending' alumni
+            if data.get('role') == 'alumni' and data.get('status') == 'pending':
+                data['rollno'] = key.decode('utf-8')
+                pending_users.append(data)
+
+    # Use the 'faculty/' prefix because of your folder structure
     return render_template('faculty/pending_requests.html', users=pending_users)
 
 @app.route('/faculty/directory')

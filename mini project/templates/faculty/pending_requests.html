@@ -1,50 +1,83 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
-<div class="mb-4">
-    <h1 class="fw-bold" style="color: var(--v-blue);">Registration Requests</h1>
-    <p class="text-muted">Review students waiting for portal access.</p>
+<div class="container py-5">
+    <div class="row mb-4 align-items-end">
+        <div class="col">
+            <h1 class="h3 fw-bold mb-1 text-dark">Registration Requests</h1>
+            <p class="text-muted mb-0">Review students waiting for portal access.</p>
+        </div>
+        <div class="col-auto">
+            <span class="badge bg-light text-primary border border-primary px-3 py-2 rounded-pill">
+                {{ users|length }} Pending Approval
+            </span>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light border-bottom">
+                    <tr>
+                        <th class="ps-4 py-3 text-secondary small text-uppercase fw-bold">Roll No</th>
+                        <th class="py-3 text-secondary small text-uppercase fw-bold">Full Name</th>
+                        <th class="py-3 text-secondary small text-uppercase fw-bold">Desired Username</th>
+                        <th class="pe-4 py-3 text-end text-secondary small text-uppercase fw-bold">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-primary">{{ user.rollno }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle me-2">{{ user.fullname[0] }}</div>
+                                <span class="fw-medium">{{ user.fullname }}</span>
+                            </div>
+                        </td>
+                        <td><span class="text-muted">@</span>{{ user.username }}</td>
+                        <td class="pe-4 text-end">
+                            <div class="d-inline-flex gap-2">
+                                <form action="{{ url_for('handle_request', rollno=user.rollno, action='approve') }}" method="POST">
+                                    <button class="btn btn-success btn-sm rounded-pill px-3">
+                                        <i class="fas fa-check me-1"></i> Approve
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('handle_request', rollno=user.rollno, action='deny') }}" method="POST">
+                                    <button class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                        <i class="fas fa-times me-1"></i> Deny
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="60" class="mb-3 opacity-25">
+                            <p class="text-muted mb-0">No pending registrations at the moment.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-<div class="directory-container">
-    <table class="v-table">
-        <thead>
-            <tr class="text-uppercase small fw-bold text-muted">
-                <th>Roll No</th>
-                <th>Full Name</th>
-                <th>Desired Username</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for req in users %}
-            <tr class="v-row">
-                <td class="fw-bold">{{ req.rollno }}</td>
-                <td>{{ req.fullname }}</td>
-                <td class="text-muted">@{{ req.username }}</td>
-                <td>
-                    <form action="{{ url_for('handle_request', rollno=req.rollno, action='approve') }}" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">
-                            <i class="fas fa-check me-1"></i> Approve
-                        </button>
-                    </form>
-                    <form action="{{ url_for('handle_request', rollno=req.rollno, action='deny') }}" method="POST" class="d-inline ms-2">
-                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                            <i class="fas fa-trash me-1"></i> Deny & Delete
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="4" class="text-center py-5">
-                    <div class="py-4">
-                        <i class="fas fa-clipboard-check mb-3 text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
-                        <p class="text-muted fw-bold">The approval queue is currently empty.</p>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+<style>
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        background-color: #e9ecef;
+        color: #495057;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 0.8rem;
+    }
+    .rounded-4 { border-radius: 1rem !important; }
+    .table-hover tbody tr:hover { background-color: #f8faff; }
+</style>
 {% endblock %}
