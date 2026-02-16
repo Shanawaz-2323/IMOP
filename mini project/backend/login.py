@@ -535,19 +535,17 @@ def view_pending_requests():
     # Use the 'faculty/' prefix because of your folder structure
     return render_template('faculty/pending_requests.html', users=pending_users)
 
+# 1. The Route to view the WHOLE LIST
 @app.route('/faculty/directory')
 def faculty_alumni_directory():
-    """Fetches all alumni for the faculty directory view."""
     if 'user' not in session or session.get('role') != 'faculty':
         return redirect(url_for('faculty_login_page'))
     
     alumni_list = []
-    # Open the alumni database
     with env.begin() as txn:
         cursor = txn.cursor()
         for key, value in cursor:
             data = json.loads(value.decode('utf-8'))
-            # Only include alumni, exclude other faculty accounts
             if data.get('role') != 'faculty':
                 alumni_list.append({
                     'rollno': key.decode('utf-8'),
@@ -556,7 +554,6 @@ def faculty_alumni_directory():
                     'email': data.get('email'),
                     'status': data.get('employment_status', 'Not Specified')
                 })
-                
     return render_template('faculty/faculty_directory.html', alumni_list=alumni_list)
 
 # Route now expects 'rollno'
@@ -579,25 +576,17 @@ def view_member_profile(rollno):
     
     return render_template('alumns/view_profile.html', user=user_data)
 
-# Change the parameter to rollno
-@app.route('/profile/<rollno>')
-def view_profile(rollno):
-    if 'user' not in session:
-        return redirect(url_for('index'))
-
-    # Direct lookup using the Roll Number as the key
+# 2. The Route to view a SINGLE PROFILE (This fixes the 404)
+@app.route('/faculty/view_profile/<rollno>')
+def faculty_view_single_profile(rollno):
     with env.begin() as txn:
-        user_raw = txn.get(rollno.encode('utf-8'))
-    
-    if not user_raw:
-        flash("Profile not found in database.", "danger")
-        return redirect(url_for('dashboard_view'))
-
-    # Decode and parse the JSON data
-    user_data = json.loads(user_raw.decode('utf-8'))
-    user_data['rollno'] = rollno  # Ensure rollno is available for the card
-    
-    return render_template('view_profile.html', user=user_data)
+        user_data = txn.get(rollno.encode('utf-8'))
+        if not user_data:
+            flash("Profile not found", "error")
+            return redirect(url_for('faculty_alumni_directory'))
+        
+        data = json.loads(user_data.decode('utf-8'))
+    return render_template('faculty/view_profile.html', person=data)
 
 @app.route('/faculty/my_posted_jobs')
 def my_posted_jobs():
