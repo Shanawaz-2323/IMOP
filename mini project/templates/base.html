@@ -102,6 +102,11 @@
             justify-content: center;
             font-size: 1.2rem;
         }
+                /* Clean category borders for the popups */
+        .glass-popup.alert-success { border-left: 8px solid #2ecc71 !important; }
+        .glass-popup.alert-danger { border-left: 8px solid #e74c3c !important; }
+        .glass-popup.alert-info { border-left: 8px solid #3498db !important; }
+        .glass-popup.alert-warning { border-left: 8px solid #f1c40f !important; }
 
         @keyframes slideDownPop {
             from { opacity: 0; transform: translate(-50%, -40px); }
@@ -111,27 +116,27 @@
 </head>
 <body>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="position-fixed top-0 start-50 translate-middle-x mt-4" style="z-index: 9999; min-width: 350px;">
-          {% for category, message in messages %}
-            <div class="glass-popup alert alert-{{ category }} alert-dismissible fade show border-0 d-flex align-items-center mb-3" role="alert">
-              
-              <div class="popup-icon-box me-3 bg-{{ 'primary' if category == 'info' else category }}">
-                <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
-              </div>
-              
-              <div>
-                <strong class="d-block text-dark small text-uppercase" style="letter-spacing: 0.5px;">Notification</strong>
-                <span class="text-muted small">{{ message }}</span>
-              </div>
-              
-              <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          {% endfor %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div id="flash-container" class="position-fixed top-0 start-50 translate-middle-x mt-4" style="z-index: 9999; min-width: 380px;">
+      {% for category, message in messages %}
+        <div class="glass-popup alert alert-{{ category }} alert-dismissible fade show d-flex align-items-center mb-3 shadow-lg" role="alert">
+          
+          <div class="popup-icon-box me-3 bg-{{ 'success' if category == 'success' else 'danger' if category == 'danger' else 'primary' }} d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 40px; height: 40px;">
+            <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+          </div>
+
+          <div class="flex-grow-1">
+            <strong class="d-block text-dark small text-uppercase fw-bold">System Notification</strong>
+            <span class="text-dark small">{{ message }}</span>
+          </div>
+          
+          <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-      {% endif %}
-    {% endwith %}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 
     {% if request.endpoint not in ['index', 'alumni_login_page', 'register_page', 'faculty_login_page', 'faculty_register_page'] %}
     <header class="v-header">
@@ -156,8 +161,9 @@
                 <a href="{{ url_for('dashboard_view') }}" class="nav-link-premium {% if 'dashboard' in request.path %}active{% endif %}">
                     <i class="fas fa-th-large me-2"></i>Dashboard
                 </a>
-               <a class="nav-link" href="{{ url_for('view_profile', username=session.get('user')) }}">
-                    <i class="fas fa-user-circle"></i> My Profile
+               <a href="{{ url_for('view_profile', rollno=session.get('user')) }}" 
+                class="nav-link-premium {% if 'profile' in request.path %}active{% endif %}">
+                    <i class="fas fa-user-circle me-2"></i>My Profile
                 </a>
                 </a>
                 <a href="{{ url_for('view_jobs') }}" class="nav-link-premium {% if 'career' in request.path or 'view_jobs' in request.path %}active{% endif %}">

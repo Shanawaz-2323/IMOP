@@ -153,8 +153,9 @@ def view_jobs():
 
 @app.route('/process_register', methods=['POST'])
 def process_register():
-    # 1. Capture Form Data
-    rollno = request.form.get('rollno', '').strip()
+    # 1. Capture and Clean Form Data
+    # Standardizing Roll Number to Uppercase prevents duplicate entry errors
+    rollno = request.form.get('rollno', '').strip().upper() 
     username = request.form.get('username', '').strip()
     fullname = request.form.get('fullname', '').strip()
     password = request.form.get('password', '').strip()
@@ -164,49 +165,55 @@ def process_register():
     # 2. Validation: Ensure required fields are not empty
     if not rollno or not username or not password:
         flash("Registration failed: Roll Number, Username, and Password are required.", "danger")
-        return redirect(url_for('register_page')) # Change to your actual register route name
+        return redirect(url_for('register_page'))
 
-    with env.begin(write=True) as txn:
-        # 3. Check if Roll Number (Primary Key) already exists
-        existing_raw = txn.get(rollno.encode('utf-8'))
-        
-        if existing_raw:
-            existing_user = json.loads(existing_raw.decode('utf-8'))
-            # If they are already in the system, tell them why they can't register again
-            if existing_user.get('status') == 'pending':
-                flash(f"Roll Number {rollno} is already awaiting faculty approval.", "warning")
-            else:
-                flash(f"Roll Number {rollno} is already registered. Please log in.", "info")
-            return redirect(url_for('index')) # Redirect to home to show the flash popup
+    try:
+        with env.begin(write=True) as txn:
+            # 3. Check if Roll Number (Primary Key) already exists
+            existing_raw = txn.get(rollno.encode('utf-8'))
+            
+            if existing_raw:
+                existing_user = json.loads(existing_raw.decode('utf-8'))
+                # Handles the specific status logic you requested
+                if existing_user.get('status') == 'pending':
+                    flash(f"Roll Number {rollno} is already awaiting faculty approval.", "warning")
+                else:
+                    flash(f"Roll Number {rollno} is already registered. Please log in.", "info")
+                return redirect(url_for('index'))
 
-        # 4. Check if Username is taken (requires scanning the database)
-        cursor = txn.cursor()
-        for key, value in cursor:
-            user_check = json.loads(value.decode('utf-8'))
-            if user_check.get('username') == username:
-                flash("This username is already taken! Please choose another.", "danger")
-                return redirect(url_for('register_page'))
+            # 4. Check if Username is taken (Scanning database)
+            cursor = txn.cursor()
+            for key, value in cursor:
+                user_check = json.loads(value.decode('utf-8'))
+                if user_check.get('username') == username:
+                    flash("This username is already taken! Please choose another.", "danger")
+                    return redirect(url_for('register_page'))
 
-        # 5. Security: Hash the password
-        hashed_pw = generate_password_hash(password)
+            # 5. Security: Hash the password
+            hashed_pw = generate_password_hash(password)
 
-        # 6. Prepare Data for Storage
-        user_data = {
-            'fullname': fullname,
-            'username': username,
-            'email': email,
-            'password': hashed_pw,
-            'employment_status': employment_status,
-            'status': 'pending',  # CRITICAL: User cannot log in until faculty changes this to 'approved'
-            'role': 'alumni'      # Distinguishes from faculty accounts
-        }
+            # 6. Prepare Data for Storage with all requested features
+            user_data = {
+                'fullname': fullname,
+                'username': username,
+                'email': email,
+                'password': hashed_pw,
+                'employment_status': employment_status,
+                'status': 'pending',  # Approval system maintained
+                'role': 'alumni'
+            }
 
-        # 7. Write to LMDB
-        txn.put(rollno.encode('utf-8'), json.dumps(user_data).encode('utf-8'))
+            # 7. Write to LMDB using Roll Number as the Key
+            txn.put(rollno.encode('utf-8'), json.dumps(user_data).encode('utf-8'))
 
-    # 8. Success: Flash message and redirect
-    flash("Registration Successful! Your account is now pending faculty approval.", "success")
-    return redirect(url_for('index')) # Redirect to home/login where base.html will show the popup
+        # 8. Success: Flash message for faculty approval
+        flash("Registration Successful! Your account is now pending faculty approval.", "success")
+        return redirect(url_for('index'))
+
+    except Exception as e:
+        # Catch-all for database lock issues or JSON errors
+        flash(f"An unexpected error occurred: {str(e)}", "danger")
+        return redirect(url_for('register_page'))
 
 
 @app.route('/verify', methods=['POST'])
@@ -525,46 +532,45 @@ def faculty_alumni_directory():
                 
     return render_template('faculty/faculty_directory.html', alumni_list=alumni_list)
 
-@app.route('/faculty/profile/<rollno>')
-def view_alumni_profile(rollno):
-    if 'user' not in session or session.get('role') != 'faculty':
-        return redirect(url_for('faculty_login_page'))
-
-    alumni_data = None
-    with env.begin() as txn:
-        # Search for the specific roll number key
-        value = txn.get(rollno.encode('utf-8'))
-        if value:
-            alumni_data = json.loads(value.decode('utf-8'))
-            alumni_data['rollno'] = rollno  # Ensure rollno is available for the UI
-
-    if not alumni_data:
-        return "Alumni not found", 404
-
-    return render_template('faculty/view_profile.html', alumni=alumni_data)
-
-@app.route('/view_profile/<username>')
-def view_profile(username):
+# Route now expects 'rollno'
+@app.route('/directory/profile/<rollno>')
+def view_member_profile(rollno):
     if 'user' not in session:
         return redirect(url_for('index'))
 
-    user_info = None
+    # Direct key lookup is much faster than a search loop
     with env.begin() as txn:
-        cursor = txn.cursor()
-        for key, value in cursor:
-            data = json.loads(value.decode('utf-8'))
-            # Search specifically for the unique username field
-            if data.get('username') == username:
-                user_info = data
-                user_info['rollno'] = key.decode('utf-8')
-                break
-        
-    if not user_info:
-        flash(f"Profile for {username} not found.", "danger")
-        return redirect(url_for('manage_applications'))
+        user_raw = txn.get(rollno.encode('utf-8'))
+    
+    if not user_raw:
+        flash("This specific profile could not be found.", "danger")
+        return redirect(url_for('alumni_directory'))
 
-    # Pass 'user_info' as 'user' to match your existing template
-    return render_template('view_profile.html', user=user_info)
+    # Load and render the specific Shanawaz
+    user_data = json.loads(user_raw.decode('utf-8'))
+    user_data['rollno'] = rollno
+    
+    return render_template('alumns/view_profile.html', user=user_data)
+
+# Change the parameter to rollno
+@app.route('/profile/<rollno>')
+def view_profile(rollno):
+    if 'user' not in session:
+        return redirect(url_for('index'))
+
+    # Direct lookup using the Roll Number as the key
+    with env.begin() as txn:
+        user_raw = txn.get(rollno.encode('utf-8'))
+    
+    if not user_raw:
+        flash("Profile not found in database.", "danger")
+        return redirect(url_for('dashboard_view'))
+
+    # Decode and parse the JSON data
+    user_data = json.loads(user_raw.decode('utf-8'))
+    user_data['rollno'] = rollno  # Ensure rollno is available for the card
+    
+    return render_template('view_profile.html', user=user_data)
 
 @app.route('/faculty/my_posted_jobs')
 def my_posted_jobs():
