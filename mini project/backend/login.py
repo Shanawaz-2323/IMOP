@@ -65,75 +65,98 @@ def post_job_page():
 # --- PORTAL VIEWS ---
 @app.route('/dashboard')
 def dashboard_view():
-    if 'user' not in session:
-        return redirect(url_for('index')) # Fixed from 'home' to 'index'
+    # 'user' should now contain the Roll Number from the updated verify function
+    rollno = session.get('user') 
     
-    user_data = {}
+    if not rollno:
+        return redirect(url_for('index'))
+    
     with env.begin() as txn:
-        cursor = txn.cursor()
-        for key, value in cursor:
-            data = json.loads(value.decode('utf-8'))
-            if data.get('fullname') == session['user']:
-                user_data = data
-                break
+        # DIRECT LOOKUP: This is the fastest way in LMDB
+        raw_data = txn.get(rollno.encode('utf-8'))
+        
+        if not raw_data:
+            # If the session still has the "Name", this flash will trigger.
+            # You MUST log out and log back in after updating your 'verify' function.
+            flash("Profile not found in database. Please log out and back in.", "error")
+            return redirect(url_for('index'))
+            
+        user_data = json.loads(raw_data.decode('utf-8'))
 
-    # List of fields we want them to fill out
+    # Profile completion logic
     important_fields = ['email', 'employment_status', 'bio', 'linkedin']
     filled_count = sum(1 for field in important_fields if user_data.get(field))
     
-    # Calculate percentage (Base 20% + 20% for each filled field)
     progress_percent = 20 + (filled_count * 20)
     if progress_percent > 100: progress_percent = 100
 
     return render_template('alumns/dashboard.html', 
-                           user=session['user'], 
+                           user=user_data, # Pass the whole dict, not just a string
                            progress=progress_percent)
 
 @app.route('/profile')
 def profile_page():
-    if 'user' not in session:
-        return redirect(url_for('index'))
+    rollno = session.get('user') # This is the Roll Number we saved during login
     
-    user_data = {}
+    if not rollno:
+        return redirect(url_for('alumni_login_page'))
+
     with env.begin() as txn:
-        cursor = txn.cursor()
-        for key, value in cursor:
-            data = json.loads(value.decode('utf-8'))
-            if data.get('fullname') == session['user']:
-                user_data = data
-                user_data['rollno'] = key.decode('utf-8')
-                break
-                
-    return render_template('alumns/profile.html', user=user_data)
+        user_data_bytes = txn.get(rollno.encode('utf-8'))
+        if not user_data_bytes:
+            flash("Could not load profile data.", "danger")
+            return redirect(url_for('dashboard_view'))
+            
+        user_info = json.loads(user_data_bytes.decode('utf-8'))
+    
+    # Pass 'user_info' to the template
+    return render_template('alumns/profile.html', user=user_info)
 
 
 
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
-    if 'user' not in session: return redirect(url_for('index'))
+    # 1. Get Roll Number from session (This is the database key)
+    rollno = session.get('user') 
     
-    rollno = request.form.get('rollno')
-    new_data = {
-        'fullname': request.form.get('fullname'),
-        'email': request.form.get('email'),
-        'employment_status': request.form.get('employment_status'),
-        'bio': request.form.get('bio'),
-        'linkedin': request.form.get('linkedin'),
-        'role': 'alumni',
-        'status': 'approved'
-    }
+    # 2. Safety Check: If rollno is missing, don't try to query LMDB
+    if not rollno:
+        flash("Session expired. Please log in again.", "danger")
+        return redirect(url_for('index'))
 
-    with env.begin(write=True) as txn:
-        old_data_raw = txn.get(rollno.encode('utf-8'))
-        if old_data_raw:
-            old_data = json.loads(old_data_raw.decode('utf-8'))
-            new_data['password'] = old_data['password'] # Keep password!
-            new_data['username'] = old_data['username']
-            txn.put(rollno.encode('utf-8'), json.dumps(new_data).encode('utf-8'))
-            session['user'] = new_data['fullname'] # Update session name if changed
-    
-    flash("Profile updated successfully!", "success")
-    return redirect(url_for('dashboard_view'))
+    # 3. Capture form data
+    fullname = request.form.get('fullname')
+    email = request.form.get('email')
+    employment_status = request.form.get('employment_status')
+    linkedin = request.form.get('linkedin')
+    bio = request.form.get('bio')
+
+    try:
+        with env.begin(write=True) as txn:
+            # Fetch existing data first to preserve fields like 'password' and 'role'
+            old_data_raw = txn.get(rollno.encode('utf-8'))
+            if not old_data_raw:
+                flash("User record not found.", "danger")
+                return redirect(url_for('dashboard_view'))
+            
+            user_data = json.loads(old_data_raw.decode('utf-8'))
+
+            # Update only the allowed profile fields
+            user_data['fullname'] = fullname
+            user_data['email'] = email
+            user_data['employment_status'] = employment_status
+            user_data['linkedin'] = linkedin
+            user_data['bio'] = bio
+
+            # Save back to LMDB using the rollno as the key
+            txn.put(rollno.encode('utf-8'), json.dumps(user_data).encode('utf-8'))
+            
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for('dashboard_view'))
+
+    except Exception as e:
+        flash(f"Error updating profile: {str(e)}", "danger")
+        return redirect(url_for('profile_page'))
 
 
 @app.route('/view_jobs')
@@ -240,7 +263,9 @@ def verify():
                         return redirect(url_for('alumni_login_page'))
                     
                     # 3. Successful Login
-                    session['user'] = user_data['fullname']
+                    session['user'] = key.decode('utf-8') 
+        
+                    session['full_name'] = user_data['fullname'] # Store name separately for the welcome message
                     session['role'] = 'alumni'
                     flash(f"Welcome back, {user_data['fullname']}!", "success")
                     return redirect(url_for('dashboard_view'))

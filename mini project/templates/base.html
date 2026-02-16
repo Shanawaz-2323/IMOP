@@ -161,7 +161,7 @@
                 <a href="{{ url_for('dashboard_view') }}" class="nav-link-premium {% if 'dashboard' in request.path %}active{% endif %}">
                     <i class="fas fa-th-large me-2"></i>Dashboard
                 </a>
-               <a href="{{ url_for('view_profile', rollno=session.get('user')) }}" 
+               <a href="{{ url_for('view_member_profile', rollno=session.get('user')) }}" 
                 class="nav-link-premium {% if 'profile' in request.path %}active{% endif %}">
                     <i class="fas fa-user-circle me-2"></i>My Profile
                 </a>
