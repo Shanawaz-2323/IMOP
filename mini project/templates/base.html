@@ -169,9 +169,7 @@
                 <a href="{{ url_for('view_jobs') }}" class="nav-link-premium {% if 'career' in request.path or 'view_jobs' in request.path %}active{% endif %}">
                     <i class="fas fa-briefcase me-2"></i>Career Options
                 </a>
-                <a href="{{ url_for('view_pending_requests') }}" class="nav-link-premium {% if 'applications' in request.path %}active{% endif %}">
-                    <i class="fas fa-file-alt me-2"></i>Applications
-                </a>
+                
             {% endif %}
 
             <a href="{{ url_for('logout') }}" class="nav-link-premium logout-pill">
