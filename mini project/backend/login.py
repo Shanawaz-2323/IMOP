@@ -2,7 +2,7 @@ import os
 import json
 import lmdb
 import time
-from datetime import datetime, date
+from datetime import datetime, date,timedelta
 from flask import Flask, render_template, request, redirect, url_for, session , flash
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -16,6 +16,7 @@ app = Flask(__name__,
             template_folder=os.path.join(root_dir, 'templates'))
 
 app.secret_key = 'alumni_secure_key' # For secure sessions
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
 # Initialize LMDB
 db_path = os.path.join(base_dir, 'alumni_lmdb')
@@ -76,9 +77,8 @@ def dashboard_view():
         raw_data = txn.get(rollno.encode('utf-8'))
         
         if not raw_data:
-            # If the session still has the "Name", this flash will trigger.
-            # You MUST log out and log back in after updating your 'verify' function.
-            flash("Profile not found in database. Please log out and back in.", "error")
+    # Change "error" to "danger"
+            flash("Profile not found in database. Please log out and back in.", "danger")
             return redirect(url_for('index'))
             
         user_data = json.loads(raw_data.decode('utf-8'))
@@ -263,6 +263,7 @@ def verify():
                         return redirect(url_for('alumni_login_page'))
                     
                     # 3. Successful Login
+                    session.permanent = True        
                     session['user'] = key.decode('utf-8') 
         
                     session['full_name'] = user_data['fullname'] # Store name separately for the welcome message
@@ -276,30 +277,44 @@ def verify():
 @app.route('/faculty_register', methods=['GET', 'POST'])
 def faculty_register():
     if request.method == 'POST':
-        # 1. Capture every field from your registration UI
-        fullname = request.form.get('fullname')
-        email = request.form.get('email')
-        employee_id = request.form.get('employee_id')
-        phone = request.form.get('phone')
-        department = request.form.get('department')
-        designation = request.form.get('designation')
-        security_question = request.form.get('security_question')
-        security_answer = request.form.get('security_answer')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
+        # 1. Capture fields using .get() with empty string fallback
+        # This prevents 'NoneType' errors during processing
+        fullname = request.form.get('fullname', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        employee_id = request.form.get('employee_id', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        
+        # Capture other fields
+        phone = request.form.get('phone', '')
+        department = request.form.get('department', '')
+        designation = request.form.get('designation', '')
+        security_q = request.form.get('security_question', '')
+        security_a = request.form.get('security_answer', '').strip().lower()
 
-        # 2. Domain Lock: Only @vec.edu.in allowed
-        if not email or not email.endswith('@vec.edu.in'):
-            flash("Error: Faculty must use an official @vec.edu.in email.", "danger")
+        # 2. VALIDATION FIXES
+        # If any of these fail, we return the user to the register page
+        if not fullname:
+            flash("Error: Full name is required.", "danger")
             return redirect(url_for('faculty_register'))
 
-        # 3. Password Match Validation
+        if not email or not email.endswith('@vec.edu.in'):
+            flash("Error: Use official @vec.edu.in email.", "danger")
+            return redirect(url_for('faculty_register'))
+
+        if not password or len(password) < 6:
+            flash("Error: Password must be at least 6 characters.", "warning")
+            return redirect(url_for('faculty_register'))
+
         if password != confirm_password:
             flash("Error: Passwords do not match.", "warning")
             return redirect(url_for('faculty_register'))
 
-        # 4. Data Preparation
+        # 3. Data Preparation
         hashed_pw = generate_password_hash(password)
+        # We hash the security answer too!
+        hashed_security_a = generate_password_hash(security_a)
+
         user_data = {
             'fullname': fullname,
             'email': email,
@@ -307,24 +322,28 @@ def faculty_register():
             'phone': phone,
             'department': department,
             'designation': designation,
-            'security_question': security_question,
-            'security_answer': security_answer,
+            'security_question': security_q,
+            'security_answer': hashed_security_a,
             'password': hashed_pw,
             'role': 'faculty'
         }
 
-        # 5. Store in LMDB using email as the unique key
-        with env.begin(write=True) as txn:
-            if txn.get(email.encode('utf-8')):
-                flash("This faculty email is already registered.", "info")
-                return redirect(url_for('faculty_login_page'))
+        # 4. Store in LMDB
+        try:
+            with env.begin(write=True) as txn:
+                if txn.get(email.encode('utf-8')):
+                    flash("This email is already registered.", "info")
+                    return redirect(url_for('faculty_login_page'))
+                
+                txn.put(email.encode('utf-8'), json.dumps(user_data).encode('utf-8'))
             
-            txn.put(email.encode('utf-8'), json.dumps(user_data).encode('utf-8'))
+            flash("Registration successful! You can now login.", "success")
+            return redirect(url_for('faculty_login_page'))
+            
+        except Exception as e:
+            flash(f"System Error: {str(e)}", "danger")
+            return redirect(url_for('faculty_register'))
 
-        flash("Faculty account created successfully!", "success")
-        return redirect(url_for('faculty_login_page'))
-
-    # If the method is GET, just show the registration page
     return render_template('faculty_register.html')
 
 @app.route('/faculty_verify', methods=['POST'])
@@ -337,8 +356,17 @@ def faculty_verify():
         if user_bytes:
             user_data = json.loads(user_bytes.decode('utf-8'))
             if check_password_hash(user_data['password'], password):
-                session['user'] = user_data['fullname']
+                session.permanent = True
+                session['user'] = email 
                 session['role'] = 'faculty'
+                
+                # SAFETY NET: Try 'fullname', then 'username', then 'name'
+                # This prevents the 'None' error if the DB key is different
+                actual_name = user_data.get('fullname') or user_data.get('username') or user_data.get('name') or "Faculty Member"
+                
+                session['full_name'] = actual_name 
+                
+                print(f"LOGIN SUCCESS: Session name set to {actual_name}") # Check your terminal
                 return redirect(url_for('faculty_dashboard'))
     
     flash("Invalid Credentials", "danger")
@@ -365,36 +393,60 @@ def alumni_directory():
 
 @app.route('/faculty_dashboard')
 def faculty_dashboard():
-    # Ensure only faculty can access this page
+    # 1. Security Check: Ensure only logged-in faculty can access
     if 'user' not in session or session.get('role') != 'faculty':
         return redirect(url_for('index'))
+    
+    # 2. Retrieve User ID (Email) from session
+    email = session.get('user')
+    
+    # 3. Attempt to get the name from the session
+    name_to_show = session.get('full_name')
+    
+    # 4. DATABASE FALLBACK: If session name is None, fetch it from LMDB
+    if not name_to_show:
+        with env.begin() as txn:
+            user_bytes = txn.get(email.encode('utf-8'))
+            if user_bytes:
+                user_data = json.loads(user_bytes.decode('utf-8'))
+                # Try getting 'fullname' or 'username' as a backup
+                name_to_show = user_data.get('fullname') or user_data.get('username')
+                # Save it back to the session so it works for the next page load
+                session['full_name'] = name_to_show
+
+    # DEBUG LINE: Check your terminal; this should no longer be None
+    print(f"DEBUG: The name being sent to UI is: {name_to_show}")
     
     alumni_list = []
     alumni_count = 0
     job_count = 0
 
-    # 1. Count Alumni and build the list
+    # 5. Count Alumni and build the list
     with env.begin() as txn:
         cursor = txn.cursor()
         for key, value in cursor:
-            data = json.loads(value.decode('utf-8'))
-            # Filter for alumni only
-            if data.get('role') != 'faculty':
-                alumni_count += 1
-                alumni_list.append({
-                    'rollno': key.decode('utf-8'),
-                    'username': data.get('username'),
-                    'fullname': data.get('fullname'),
-                    'status': data.get('employment_status', 'Not Specified')
-                })
+            try:
+                data = json.loads(value.decode('utf-8'))
+                # Filter for alumni only
+                if data.get('role') == 'alumni':
+                    alumni_count += 1
+                    alumni_list.append({
+                        'rollno': key.decode('utf-8'),
+                        'username': data.get('username'),
+                        'fullname': data.get('fullname'),
+                        'status': data.get('employment_status', 'Not Specified')
+                    })
+            except Exception as e:
+                print(f"Error processing record: {e}")
 
-    # 2. Count Total Job Postings
+    # 6. Count Total Job Postings
     with jobs_env.begin() as txn:
-        # Use stat() to get the number of entries in the database efficiently
+        # Note: stat() counts all entries (jobs + applications)
         job_count = txn.stat()['entries']
                 
-    # Pass counts to the template
+    # 7. Render Template with the confirmed name
     return render_template('faculty/faculty_dashboard.html', 
+                           faculty_name=name_to_show, 
                            alumni=alumni_list, 
                            total_alumni=alumni_count, 
                            total_jobs=job_count)
@@ -542,6 +594,85 @@ def manage_applications():
     
     return render_template('faculty/applications.html', applications=publisher_apps)
 
+@app.route('/faculty/edit_job/<job_id>')
+def edit_job_page(job_id):
+    if session.get('role') != 'faculty':
+        return redirect(url_for('index'))
+
+    # FIX: Use jobs_env, not env
+    with jobs_env.begin() as txn:
+        # Your storage logic adds 'job_' prefix, so we must search with it
+        job_key = f"job_{job_id}".encode('utf-8')
+        job_data_raw = txn.get(job_key)
+        
+        if not job_data_raw:
+            # Fallback check: try without prefix if ID already contains it
+            job_data_raw = txn.get(job_id.encode('utf-8'))
+
+        if not job_data_raw:
+            flash(f"Job ID {job_id} not found in Jobs Database.", "danger")
+            return redirect(url_for('my_posted_jobs'))
+            
+        job_data = json.loads(job_data_raw.decode('utf-8'))
+        # Ensure ID is present for the form action
+        job_data['id'] = job_id 
+
+    return render_template('faculty/job_posting.html', job=job_data, is_edit=True)
+
+@app.route('/faculty/update_job/<job_id>', methods=['POST'])
+def update_job(job_id):
+    if session.get('role') != 'faculty':
+        return redirect(url_for('index'))
+
+    # Reconstruct the dictionary from form data
+    updated_data = {
+        "id": job_id,
+        "title": request.form.get('title'),
+        "company": request.form.get('company'),
+        "location": request.form.get('location'),
+        "job_type": request.form.get('job_type'),
+        "salary_range": request.form.get('salary_range'),
+        "description": request.form.get('description'),
+        "requirements": request.form.get('requirements'),
+        "contact_email": request.form.get('contact_email'),
+        "deadline": request.form.get('deadline'),
+        "poster_name": session.get('user'), # Keep the faculty name
+        "posted_by": session.get('user'),
+        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "is_active": True
+    }
+
+    # FIX: Use jobs_env and ensure key matches 'job_ID'
+    try:
+        with jobs_env.begin(write=True) as txn:
+            job_key = f"job_{job_id}".encode('utf-8')
+            txn.put(job_key, json.dumps(updated_data).encode('utf-8'))
+        
+        flash("Job posting updated successfully!", "success")
+    except Exception as e:
+        flash(f"Update failed: {str(e)}", "danger")
+
+    return redirect(url_for('my_posted_jobs'))
+
+@app.route('/faculty/delete_job/<job_id>', methods=['POST'])
+def delete_job(job_id):
+    if session.get('role') != 'faculty':
+        return redirect(url_for('index'))
+
+    # FIX: Use jobs_env
+    try:
+        with jobs_env.begin(write=True) as txn:
+            job_key = f"job_{job_id}".encode('utf-8')
+            if txn.get(job_key):
+                txn.delete(job_key)
+                flash("Opportunity deleted successfully.", "success")
+            else:
+                flash("Error: Job record not found.", "danger")
+    except Exception as e:
+        flash(f"Delete failed: {str(e)}", "danger")
+
+    return redirect(url_for('my_posted_jobs'))
+
 @app.route('/faculty/pending_registrations')
 def view_pending_requests():
     if session.get('role') != 'faculty':
@@ -656,11 +787,9 @@ def update_app_status(job_id, alumni_name, status):
 
 @app.route('/logout')
 def logout():
-    session.clear() 
-    # This also helps clear the 'flashes' internally
-    flash("You have been logged out safely.", "info") 
-    return redirect(url_for('index'))
-
+    session.clear() # Wipe everything clean
+    flash("You have been logged out successfully.", "success") # Re-add just the message
+    return redirect(url_for('index')) # Ensure 'index' has the flash display block!
 
 if __name__ == '__main__':
     app.run(debug=True)

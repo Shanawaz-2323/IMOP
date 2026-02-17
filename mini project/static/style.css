@@ -533,3 +533,49 @@ body.auth-vibrant-bg {
     border-top: none;
     letter-spacing: 0.05em;
 }
+.glass-feature-card {
+    /* The core Glassmorphism effect */
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    padding: 40px 30px;
+    height: 100%;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    text-align: center;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.03);
+}
+
+.glass-feature-card:hover {
+    transform: translateY(-12px);
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 1.4rem;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.glass-feature-card h5 {
+    color: #1a2b48;
+    font-weight: 800;
+    margin-bottom: 15px;
+    letter-spacing: -0.5px;
+}
+
+.glass-feature-card p {
+    font-size: 0.95rem;
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 0;
+}

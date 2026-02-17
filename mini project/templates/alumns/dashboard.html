@@ -89,7 +89,8 @@
         <div class="row align-items-center">
             <div class="col-md-8">
                 <span class="badge bg-info mb-3 px-3 py-2 rounded-pill">Alumni Network Active</span>
-                <h1 class="display-5 fw-800">Welcome back,{{ user.fullname }}!</h1>
+                <h1 class="display-5 fw-800">Welcome back,<br>
+                    {{ user.fullname }}!</h1>
                 <p class="opacity-75 fs-5">Your VEC legacy continues here. Explore career paths, connect with peers, and stay updated.</p>
                 <div class="mt-4">
                     <a href="{{ url_for('view_jobs') }}" class="action-pill me-3">

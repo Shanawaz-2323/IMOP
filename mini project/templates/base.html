@@ -12,140 +12,114 @@
         :root {
             --primary-blue: #1a2b48;
             --v-accent: #0d6efd;
-            --glass-nav: rgba(255, 255, 255, 0.8);
+            --glass-nav: rgba(255, 255, 255, 0.85);
+            --v-danger: #ff4d4d;
+            --v-success: #00c853;
         }
+
+        html, body { height: 100%; margin: 0; }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: radial-gradient(circle at top right, #e0eafc, #f8fafc) !important;
-            min-height: 100vh;
-            padding-top: 100px; /* Space for the fixed header */
+            display: flex;
+            flex-direction: column;
+            padding-top: 100px;
         }
 
-        /* --- THE GLOBAL GLASS HEADER --- */
+        /* --- NAVIGATION --- */
         .v-header {
             background: var(--glass-nav);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.3);
             position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            padding: 15px 0;
+            top: 0; width: 100%; z-index: 1000;
+            padding: 12px 0;
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
         }
 
         .nav-link-premium {
             color: var(--primary-blue) !important;
-            font-weight: 700;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 10px 20px !important;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            margin: 0 5px;
+            font-weight: 700; font-size: 0.85rem;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 10px 18px !important; border-radius: 12px;
+            transition: all 0.3s ease; margin: 0 3px; text-decoration: none;
+            display: inline-flex; align-items: center;
         }
 
-        .nav-link-premium:hover {
-            background: rgba(13, 110, 253, 0.08);
-            color: var(--v-accent) !important;
-            transform: translateY(-1px);
-        }
+        .nav-link-premium:hover { background: rgba(13, 110, 253, 0.08); color: var(--v-accent) !important; }
+        .nav-link-premium.active { background: var(--primary-blue); color: white !important; }
 
-        .nav-link-premium.active {
-            background: var(--primary-blue);
-            color: white !important;
-        }
+        .logout-pill { border: 2px solid var(--v-danger); color: var(--v-danger) !important; border-radius: 50px; font-weight: 800; }
+        .logout-pill:hover { background: var(--v-danger); color: white !important; }
 
-        .logout-pill {
-            border: 2px solid #ff4d4d;
-            color: #ff4d4d !important;
-            border-radius: 50px;
-            padding: 8px 22px !important;
-            font-weight: 800;
-            margin-left: 15px;
-        }
+        /* --- PREMIUM FLASH NOTIFICATIONS --- */
+    #flash-container {
+        position: fixed;
+        top: 110px; /* Below your fixed header */
+        left: 20px;
+        z-index: 9999;
+        width: 380px;
+        pointer-events: none;
+    }
 
-        .logout-pill:hover {
-            background: #ff4d4d;
-            color: white !important;
-        }
+    .custom-flash {
+        pointer-events: auto;
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(10px);
+        border-radius: 16px !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
+        padding: 15px !important;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        /* SLIDE IN FROM LEFT */
+        animation: slideInLeft 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, 
+                   fadeOutSlow 0.8s ease-in 4s forwards;
+    }
 
-        .brand-logo {
-            font-weight: 800;
-            font-size: 1.3rem;
-            color: var(--primary-blue);
-            text-decoration: none;
-        }
+    .flash-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: white;
+        flex-shrink: 0;
+    }
 
-        /* --- PREMIUM FLOATING POPUP --- */
-        .glass-popup {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            border-radius: 18px;
-            padding: 18px 25px;
-            border-left: 6px solid var(--v-accent) !important;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            animation: slideDownPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+    /* Professional Muted Colors */
+    .bg-flash-success { background: #28a745; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3); }
+    .bg-flash-danger { background: #dc3545; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3); }
 
-        .popup-icon-box {
-            width: 42px;
-            height: 42px;
-            background: var(--v-accent);
-            color: white;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-                /* Clean category borders for the popups */
-        .glass-popup.alert-success { border-left: 8px solid #2ecc71 !important; }
-        .glass-popup.alert-danger { border-left: 8px solid #e74c3c !important; }
-        .glass-popup.alert-info { border-left: 8px solid #3498db !important; }
-        .glass-popup.alert-warning { border-left: 8px solid #f1c40f !important; }
+    @keyframes slideInLeft {
+        0% { opacity: 0; transform: translateX(-100%); }
+        100% { opacity: 1; transform: translateX(0); }
+    }
 
-        @keyframes slideDownPop {
-            from { opacity: 0; transform: translate(-50%, -40px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
-        }
+    @keyframes fadeOutSlow {
+        0% { opacity: 1; transform: scale(1); }
+        100% { opacity: 0; transform: scale(0.9) translateX(-30px); visibility: hidden; }
+    }
+
+
+        .content-wrapper { flex: 1 0 auto; width: 100%; }
+        .main-footer { flex-shrink: 0; background: rgba(255, 255, 255, 0.8); border-top: 1px solid rgba(0,0,0,0.05); padding: 20px 0; margin-top: 40px; }
     </style>
 </head>
 <body>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div id="flash-container" class="position-fixed top-0 start-50 translate-middle-x mt-4" style="z-index: 9999; min-width: 380px;">
-      {% for category, message in messages %}
-        <div class="glass-popup alert alert-{{ category }} alert-dismissible fade show d-flex align-items-center mb-3 shadow-lg" role="alert">
-          
-          <div class="popup-icon-box me-3 bg-{{ 'success' if category == 'success' else 'danger' if category == 'danger' else 'primary' }} d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 40px; height: 40px;">
-            <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
-          </div>
-
-          <div class="flex-grow-1">
-            <strong class="d-block text-dark small text-uppercase fw-bold">System Notification</strong>
-            <span class="text-dark small">{{ message }}</span>
-          </div>
-          
-          <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-{% endwith %}
-
-    {% if request.endpoint not in ['index', 'alumni_login_page', 'register_page', 'faculty_login_page', 'faculty_register_page'] %}
-    <header class="v-header">
-        <div class="container d-flex justify-content-between align-items-center">
-            <a href="/" class="brand-logo">
-                <i class="fas fa-university me-2 text-primary"></i>VEC PORTAL
-            </a>
-
-            <nav class="d-flex align-items-center">
+{% if request.endpoint not in ['index', 'alumni_login_page', 'register_page', 'faculty_login_page', 'faculty_register_page'] %}
+<header class="v-header">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a href="/" class="brand-logo text-decoration-none fw-bold" style="color: var(--primary-blue); font-size: 1.3rem;">
+            <i class="fas fa-university me-2 text-primary"></i>VEC PORTAL
+        </a>
+        
+        <nav class="d-flex align-items-center">
             {% if session.get('role') == 'faculty' %}
                 <a href="{{ url_for('faculty_dashboard') }}" class="nav-link-premium {% if 'dashboard' in request.path %}active{% endif %}">
                     <i class="fas fa-chart-line me-2"></i>Faculty Hub
@@ -156,50 +130,95 @@
                 <a href="{{ url_for('faculty_alumni_directory') }}" class="nav-link-premium {% if 'directory' in request.path %}active{% endif %}">
                     <i class="fas fa-database me-2"></i>Manage Alumni
                 </a>
-
             {% elif session.get('role') == 'alumni' %}
                 <a href="{{ url_for('dashboard_view') }}" class="nav-link-premium {% if 'dashboard' in request.path %}active{% endif %}">
                     <i class="fas fa-th-large me-2"></i>Dashboard
                 </a>
-               <a href="{{ url_for('view_member_profile', rollno=session.get('user')) }}" 
-                class="nav-link-premium {% if 'profile' in request.path %}active{% endif %}">
+                <a href="{{ url_for('profile_page') }}" class="nav-link-premium {% if 'profile' in request.path %}active{% endif %}">
                     <i class="fas fa-user-circle me-2"></i>My Profile
                 </a>
-                </a>
-                <a href="{{ url_for('view_jobs') }}" class="nav-link-premium {% if 'career' in request.path or 'view_jobs' in request.path %}active{% endif %}">
+                <a href="{{ url_for('view_jobs') }}" class="nav-link-premium {% if 'career' in request.path %}active{% endif %}">
                     <i class="fas fa-briefcase me-2"></i>Career Options
                 </a>
-                
             {% endif %}
-
+            
             <a href="{{ url_for('logout') }}" class="nav-link-premium logout-pill">
                 <i class="fas fa-sign-out-alt me-2"></i>Logout
             </a>
         </nav>
-        </div>
-    </header>
-    {% else %}
-    <style>
-        /* Remove the top padding on pages where the header is hidden */
-        body { padding-top: 20px !important; }
-    </style>
-    {% endif %}
+    </div>
+</header>
+{% endif %}
+
+<div id="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          {# This maps 'warning' or 'error' from app.py to 'danger' for our CSS #}
+          {% set alert_type = 'danger' if category in ['error', 'danger', 'warning'] else 'success' %}
+          
+          <div class="custom-flash shadow" role="alert">
+             <div class="flash-icon bg-flash-{{ alert_type }}">
+                <i class="fas {% if alert_type == 'success' %}fa-check{% else %}fa-exclamation-triangle{% endif %}"></i>
+             </div>
+             <div class="flex-grow-1">
+                <div class="small text-muted text-uppercase fw-bold" style="font-size: 0.6rem; letter-spacing: 0.8px;">
+                    {{ category | upper }}
+                </div>
+                <div class="fw-bold text-dark" style="font-size: 0.95rem;">{{ message }}</div>
+             </div>
+             <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+</div>
+
+<div class="content-wrapper">
     <div class="container py-4">
         {% block content %}{% endblock %}
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<footer class="main-footer">
+    <div class="container text-center small text-muted">
+        <span class="fw-bold text-dark">VEC Alumni Portal</span> &bull; &copy; 2026 All Rights Reserved
+    </div>
+</footer>
 
-    <script>
-    // Only auto-dismiss alerts that are inside the notification container
-            setTimeout(function() {
-                // Target specifically the alerts inside the floating notification area
-                let alerts = document.querySelectorAll('.position-fixed .glass-popup');
-                alerts.forEach(function(alert) {
-                    let bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                });
-            }, 5000);
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-close alerts
+        const alerts = document.querySelectorAll('.custom-flash');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                if (bsAlert) bsAlert.close();
+            }, 5500);
+        });
+
+        // Form Loading Animation
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function() {
+                const btn = this.querySelector('button[type="submit"]');
+                if (btn && !btn.classList.contains('no-spinner')) {
+                    btn.disabled = true;
+                    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Processing...`;
+                }
+            });
+        });
+    });
+
+    // Session Inactivity
+    const inactivityTime = 30 * 60 * 1000; 
+    if ("{{ session.get('user') }}" !== "None" && "{{ session.get('user') }}" !== "") {
+        setTimeout(() => {
+            alert("Your session has expired.");
+            window.location.href = "{{ url_for('logout') }}";
+        }, inactivityTime);
+    }
 </script>
 </body>
 </html>
